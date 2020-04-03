@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { authEndpoint, clientId, redirectUri, scopes } from "./config";
 import hash from "./hash";
-import Player from "./Player";
+import Player from "./Player/Player";
 import logo from "./logo.svg";
 import "./App.css";
 
@@ -45,28 +45,28 @@ class App extends Component {
 
   //this one seems to work but in the future i want to try to use the spotify-api wrapper functions with preset token
   getCurrentlyPlaying(token) {
-    fetch('https://api.spotify.com/v1/me/player', { 
-      method: 'get', 
+    fetch('https://api.spotify.com/v1/me/player', {
+      method: 'get',
       headers: new Headers({
-        'Authorization': "Bearer " + token, 
+        'Authorization': "Bearer " + token,
       })
     })
-    .then((response) => {
-       console.log(response);
-       return response.json();
-    })
-    .then((data) => {
-      console.log(data);
+      .then((response) => {
+        console.log(response);
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
 
-      this.setState({
-        item: data.item,
-        is_playing: data.is_playing,
-        progress_ms: data.progress_ms,
+        this.setState({
+          item: data.item,
+          is_playing: data.is_playing,
+          progress_ms: data.progress_ms,
+        });
+      })
+      .catch((error) => {
+        console.log(error);
       });
-    })
-    .catch((error) => {
-      console.log(error);
-    });
   }
 
   render() {
