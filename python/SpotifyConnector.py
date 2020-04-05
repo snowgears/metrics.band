@@ -72,6 +72,17 @@ class SpotifyConnector(object):
         spotipy_obj = spotipy.Spotify(auth=token)
         return spotipy_obj
 
+    def get_current_user(self):
+        """
+        TODO document this shit
+        :return:
+        """
+        # generate spotipy obj
+        spotipy_obj = self.generate_spotipy_obj()
+
+        current_user = spotipy_obj.current_user()
+        return current_user
+
     def get_playing_song_and_artists(self):
         """
         Queries Spotify for current song, and parses data into a song object and a list of artists

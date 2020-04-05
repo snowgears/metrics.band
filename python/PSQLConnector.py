@@ -2,18 +2,37 @@ import psycopg2
 
 
 class PSQLConnector(object):
-    def __init__(self, host, dbname, dbuser, dbpassword):
+    def __init__(self, host, port, dbname, dbuser, dbpassword):
         self.dbname = dbname
         self.dbuser = dbuser
         self.dbpassword = dbpassword
         self.host = host
+        self.port = port
 
         self.connection = None
 
     def connect(self):
-        connection = psycopg2.connect(host=self.host, database=self.dbname, user=self.dbuser, password=self.dbpassword)
-        self.connection = connection
+        # TODO try excepts my dude
+        connection = psycopg2.connect(host=self.host, port=self.port, database=self.dbname, user=self.dbuser,
+                                      password=self.dbpassword)
+        return connection
 
-    def insert_listen_history(self, song):
-        sql = """INSERT INTO vendors(vendor_name)
-             VALUES(%s) RETURNING vendor_id;"""
+    @staticmethod
+    def close_connection(connection, cursor):
+        if connection:
+            cursor.close()
+            connection.close()
+
+    def sql_query(self, sql):
+        # establish connection
+        connection = self.connect()
+        cursor = connection.cursor()
+
+        # execute sql
+        cursor.execute(sql)
+        records = cursor.fetchall()
+
+        for row in records:
+            print(row)
+
+        self.close_connection(connection=connection, cursor=cursor)

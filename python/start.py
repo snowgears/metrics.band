@@ -38,6 +38,10 @@ if __name__ == "__main__":
     username = get_username_from_args()
     spotify_connector = SpotifyConnector(username=username)
 
+    spotify_user = spotify_connector.get_current_user()
+
+    print(spotify_user)
+
 
     def query_spotify(sc):
         current_song, current_artists = spotify_connector.get_playing_song_and_artists()
