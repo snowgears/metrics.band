@@ -4,6 +4,8 @@ import spotipy
 import spotipy.util as util
 
 
+# TODO add debug printing
+
 class SpotifyConnector(object):
     """
     A Spotify connector with helper methods using spotipy
@@ -22,7 +24,7 @@ class SpotifyConnector(object):
     Methods
     -------
     generate_spotipy_obj():
-        authenticates user with Spotify and returns an authenticated spotipy object
+        authenticates user with Spotify and returns an authenticated spotipy object. object used to query user data.
     get_playing_song_and_artists():
         gets currently playing song from Spotify and returns a song object and an artists object.
     get_song_features(song_id):
