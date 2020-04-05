@@ -105,7 +105,8 @@ class SpotifyConnector(object):
             for artist in artists:
                 artist_obj = {
                     'artist_name': artist['name'],
-                    'artist_spotify_id': artist['id']
+                    'artist_spotify_id': artist['id'],
+                    'song_id': current_song['item']['id']
                 }
                 artists_list.extend([artist_obj])
 
