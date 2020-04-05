@@ -3,6 +3,7 @@ import os
 import spotipy
 import spotipy.util as util
 import json
+import time
 
 
 # TODO add debug printing
@@ -114,7 +115,7 @@ class SpotifyConnector(object):
                 'song_id': current_song['item']['id'],
                 'song_name': current_song['item']['name'],
                 'song_popularity': current_song['item']['popularity'],
-                'song_timestamp': current_song['timestamp'],
+                'song_timestamp': int(time.time()) * 1000,
                 'processed': False,
                 'artists': [d['artist_spotify_id'] for d in artists_list],
                 'type': current_song['currently_playing_type']
