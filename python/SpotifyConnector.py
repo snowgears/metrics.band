@@ -29,7 +29,7 @@ class SpotifyConnector(object):
         returns Spotify song features given a Spotify song ID
     """
 
-    def __init__(self, scope, username, debug=False):
+    def __init__(self, username, debug=False):
         """
         Initializes SpotifyConnector class
 
@@ -37,7 +37,7 @@ class SpotifyConnector(object):
         :param username: int
         :param debug: bool, optional
         """
-        self.scope = scope
+        self.scope = 'user-library-read user-read-recently-played user-read-currently-playing'
         self.username = username
         self.debug = debug
 
@@ -137,9 +137,8 @@ def get_username_from_args():
 
 def debug():
     username = get_username_from_args()
-    scope = 'user-library-read user-read-recently-played user-read-currently-playing'
 
-    spotify_connector = SpotifyConnector(scope=scope, username=username)
+    spotify_connector = SpotifyConnector(username=username)
     current_song, current_artists = spotify_connector.get_playing_song_and_artists()
     print(current_song)
     print(current_artists)
