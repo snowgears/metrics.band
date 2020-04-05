@@ -70,7 +70,10 @@ class SpotifyConnector(object):
         spotipy_obj = self.generate_spotipy_obj()
         # get currently playing song
         current_song = spotipy_obj.current_user_playing_track()
-        if current_song is not None:
+
+        print(current_song)
+        if current_song is not None and current_song['is_playing']:
+
             # get current song artists
             artists = current_song['item']['artists']
 
@@ -91,7 +94,8 @@ class SpotifyConnector(object):
                 'song_popularity': current_song['item']['popularity'],
                 'song_timestamp': current_song['timestamp'],
                 'processed': False,
-                'artists': [d['artist_spotify_id'] for d in artists_list]
+                'artists': [d['artist_spotify_id'] for d in artists_list],
+                'type': current_song['item']['currently_playing_type']
             }
 
             return song_obj, artists_list
