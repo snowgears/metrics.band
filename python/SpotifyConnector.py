@@ -5,12 +5,48 @@ import spotipy.util as util
 
 
 class SpotifyConnector(object):
+    """
+    A Spotify connector with helper methods using spotipy
+
+    ...
+
+    Attributes
+    ----------
+    scope : str
+        space separated string of spotify scope
+    username : int
+        Spotify username
+    debug: bool
+        debug flag
+
+    Methods
+    -------
+    generate_spotipy_obj():
+        authenticates user with Spotify and returns an authenticated spotipy object
+    get_playing_song_and_artists():
+        gets currently playing song from Spotify and returns a song object and an artists object.
+    get_song_features(song_id):
+        returns Spotify song features given a Spotify song ID
+    """
+
     def __init__(self, scope, username, debug=False):
+        """
+        Initializes SpotifyConnector class
+
+        :param scope: str
+        :param username: int
+        :param debug: bool, optional
+        """
         self.scope = scope
         self.username = username
         self.debug = debug
 
-    def generate_spotify_token(self):
+    def generate_spotipy_obj(self):
+        """
+        Creates a Spotify auth token and generates a Spotipy obj on successful authentication
+        :return: Spotipy Object
+        :rtype: object
+        """
         try:
             # create token
             token = util.prompt_for_user_token(self.username, self.scope)
@@ -19,14 +55,19 @@ class SpotifyConnector(object):
             os.remove(f".cache-{self.username}")
             # create token
             token = util.prompt_for_user_token(self.username, self.scope)
-        spotify_token = spotipy.Spotify(auth=token)
-        return spotify_token
+        spotipy_obj = spotipy.Spotify(auth=token)
+        return spotipy_obj
 
     def get_playing_song_and_artists(self):
-        # generate spotify token
-        spotify_token = self.generate_spotify_token()
+        """
+        Queries Spotify for current song, and parses data into a song object and a list of artists
+        :return: song_obj/artist_list
+        :rtype: object, list
+        """
+        # generate spotipy obj
+        spotipy_obj = self.generate_spotipy_obj()
         # get currently playing song
-        current_song = spotify_token.current_user_playing_track()
+        current_song = spotipy_obj.current_user_playing_track()
         if current_song is not None:
             # get current song artists
             artists = current_song['item']['artists']
@@ -54,10 +95,16 @@ class SpotifyConnector(object):
         return None, None
 
     def get_song_features(self, song_id):
-        # generate spotify token
-        spotify_token = self.generate_spotify_token()
+        """
+        Queries Spotify for song features given a song_id
+        :param song_id: int
+        :return: song_features_obj
+        :rtype: object
+        """
+        # generate spotipy obj
+        spotipy_obj = self.generate_spotipy_obj()
         # get song features
-        song_features = spotify_token.audio_features(song_id)
+        song_features = spotipy_obj.audio_features(song_id)
         # parse song features
         song_features_obj = {
             'song_id': song_id,
