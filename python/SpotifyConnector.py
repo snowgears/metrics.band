@@ -2,9 +2,11 @@ import sys
 import os
 import spotipy
 import spotipy.util as util
+import json
 
 
 # TODO add debug printing
+# TODO get spotify info from a config file
 
 class SpotifyConnector(object):
     """
@@ -43,6 +45,16 @@ class SpotifyConnector(object):
         self.username = username
         self.debug = debug
 
+        # TODO put int try catch to let user know that they need config.json
+        # load client id/secret and redirect URI from config.json
+        with open('config.json') as f:
+            config = json.load(f)
+
+        # set env variables based on config.json file
+        os.environ["SPOTIPY_CLIENT_ID"] = config['SPOTIFY_CLIENT_ID']
+        os.environ["SPOTIPY_CLIENT_SECRET"] = config['SPOTIFY_CLIENT_SECRET']
+        os.environ["SPOTIPY_REDIRECT_URI"] = config['SPOTIFY_REDIRECT_URI']
+
     def generate_spotipy_obj(self):
         """
         Creates a Spotify auth token and generates a Spotipy obj on successful authentication
@@ -71,7 +83,6 @@ class SpotifyConnector(object):
         # get currently playing song
         current_song = spotipy_obj.current_user_playing_track()
 
-        print(current_song)
         if current_song is not None and current_song['is_playing']:
 
             # get current song artists
@@ -95,7 +106,7 @@ class SpotifyConnector(object):
                 'song_timestamp': current_song['timestamp'],
                 'processed': False,
                 'artists': [d['artist_spotify_id'] for d in artists_list],
-                'type': current_song['item']['currently_playing_type']
+                'type': current_song['currently_playing_type']
             }
 
             return song_obj, artists_list

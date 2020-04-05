@@ -11,6 +11,7 @@
 # production
 react/build
 react/src/config.js
+python/config.json
 
 # misc
 .DS_Store

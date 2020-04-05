@@ -29,6 +29,7 @@ def get_username_from_args():
 
 
 if __name__ == "__main__":
+
     songs = []
     artists = []
     features = []
@@ -40,20 +41,21 @@ if __name__ == "__main__":
 
     def query_spotify(sc):
         current_song, current_artists = spotify_connector.get_playing_song_and_artists()
-        song_features = spotify_connector.get_song_features(current_song['song_id'])
+        if current_song is not None:
+            song_features = spotify_connector.get_song_features(current_song['song_id'])
 
-        print(current_song)
-        print(current_artists)
-        print(song_features)
+            print(current_song)
+            print(current_artists)
+            print(song_features)
 
-        songs.extend([current_song])
-        artists.extend(current_artists)
-        features.extend([song_features])
+            songs.extend([current_song])
+            artists.extend(current_artists)
+            features.extend([song_features])
 
-        # with open('backups.pkl', 'wb') as f:
-        #     pickle.dump([songs, artists, features], f)
+            # with open('backups.pkl', 'wb') as f:
+            #     pickle.dump([songs, artists, features], f)
 
-        print(len(songs))
+            print(len(songs))
         s.enter(120, 1, query_spotify, (sc,))
 
 
