@@ -52,8 +52,8 @@ if __name__ == "__main__":
             artists.extend(current_artists)
             features.extend([song_features])
 
-            # with open('backups.pkl', 'wb') as f:
-            #     pickle.dump([songs, artists, features], f)
+            with open('backups_new.pkl', 'wb') as f:
+                pickle.dump([songs, artists, features], f)
 
             print(len(songs))
         s.enter(120, 1, query_spotify, (sc,))
