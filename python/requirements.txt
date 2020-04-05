@@ -1,4 +1,1 @@
-pandas==1.0.3
-pytz==2019.3
-python_dateutil==2.8.1
 spotipy==2.10.0
