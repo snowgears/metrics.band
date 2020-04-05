@@ -90,7 +90,8 @@ class SpotifyConnector(object):
                 'song_name': current_song['item']['name'],
                 'song_popularity': current_song['item']['popularity'],
                 'song_timestamp': current_song['timestamp'],
-                'processed': False
+                'processed': False,
+                'artists': [d['artist_spotify_id'] for d in artists_list]
             }
 
             return song_obj, artists_list
