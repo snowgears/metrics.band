@@ -29,24 +29,50 @@ def get_username_from_args():
 
 
 if __name__ == "__main__":
-
     songs = []
     artists = []
     features = []
 
     s = sched.scheduler(time.time, time.sleep)
-    username = get_username_from_args()
-    spotify_connector = SpotifyConnector(username=username)
+    spotify_connector1 = SpotifyConnector('kevin')
 
-    spotify_user = spotify_connector.get_current_user()
+    print(spotify_connector1.get_spotipy_oath_uri())
+    print('Enter url:')
+    x = input()
+    print(x)
+    spotify_connector1.generate_access_tokens(x)
 
-    print(spotify_user)
+    spotify_user1 = spotify_connector1.get_current_user()
+
+    print(spotify_user1)
+
+    spotify_connector2 = SpotifyConnector('scott')
+
+    print(spotify_connector2.get_spotipy_oath_uri())
+    print('Enter url:')
+    x = input()
+    spotify_connector2.generate_access_tokens(x)
+
+    spotify_user2 = spotify_connector2.get_current_user()
+
+    print(spotify_user2)
+
+    spotify_connector3 = SpotifyConnector('tanner')
+
+    print(spotify_connector3.get_spotipy_oath_uri())
+    print('Enter url:')
+    x = input()
+    spotify_connector3.generate_access_tokens(x)
+
+    spotify_user3 = spotify_connector3.get_current_user()
+
+    print(spotify_user3)
 
 
     def query_spotify(sc):
-        current_song, current_artists = spotify_connector.get_playing_song_and_artists()
+        current_song, current_artists = spotify_connector1.get_playing_song_and_artists()
         if current_song is not None:
-            song_features = spotify_connector.get_song_features(current_song['song_id'])
+            song_features = spotify_connector1.get_song_features(current_song['song_id'])
 
             print(current_song)
             print(current_artists)
@@ -59,7 +85,36 @@ if __name__ == "__main__":
             with open('backups_2.pkl', 'wb') as f:
                 pickle.dump([songs, artists, features], f)
 
-            print(len(songs))
+        current_song, current_artists = spotify_connector2.get_playing_song_and_artists()
+        if current_song is not None:
+            song_features = spotify_connector2.get_song_features(current_song['song_id'])
+
+            print(current_song)
+            print(current_artists)
+            print(song_features)
+
+            songs.extend([current_song])
+            artists.extend(current_artists)
+            features.extend([song_features])
+
+            with open('backups_2.pkl', 'wb') as f:
+                pickle.dump([songs, artists, features], f)
+
+        current_song, current_artists = spotify_connector3.get_playing_song_and_artists()
+        if current_song is not None:
+            song_features = spotify_connector3.get_song_features(current_song['song_id'])
+
+            print(current_song)
+            print(current_artists)
+            print(song_features)
+
+            songs.extend([current_song])
+            artists.extend(current_artists)
+            features.extend([song_features])
+
+            with open('backups_2.pkl', 'wb') as f:
+                pickle.dump([songs, artists, features], f)
+
         s.enter(120, 1, query_spotify, (sc,))
 
 

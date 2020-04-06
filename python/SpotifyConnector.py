@@ -1,7 +1,6 @@
 import sys
-import os
 import spotipy
-import spotipy.util as util
+from spotipy import oauth2
 import json
 import time
 
@@ -19,8 +18,8 @@ class SpotifyConnector(object):
     ----------
     scope : str
         space separated string of spotify scope
-    username : int
-        Spotify username
+    cache : str
+        cache location
     debug: bool
         debug flag
 
@@ -34,16 +33,16 @@ class SpotifyConnector(object):
         returns Spotify song features given a Spotify song ID
     """
 
-    def __init__(self, username, debug=False):
+    def __init__(self, cache, debug=False):
         """
         Initializes SpotifyConnector class
 
         :param scope: str
-        :param username: int
+        :param cache: str
         :param debug: bool, optional
         """
         self.scope = 'user-library-read user-read-recently-played user-read-currently-playing'
-        self.username = username
+        self.cache = '.' + cache
         self.debug = debug
 
         # TODO put int try catch to let user know that they need config.json
@@ -51,26 +50,40 @@ class SpotifyConnector(object):
         with open('config.json') as f:
             config = json.load(f)
 
-        # set env variables based on config.json file
-        os.environ["SPOTIPY_CLIENT_ID"] = config['SPOTIFY_CLIENT_ID']
-        os.environ["SPOTIPY_CLIENT_SECRET"] = config['SPOTIFY_CLIENT_SECRET']
-        os.environ["SPOTIPY_REDIRECT_URI"] = config['SPOTIFY_REDIRECT_URI']
+        self.sp_oauth = oauth2.SpotifyOAuth(config['SPOTIFY_CLIENT_ID'], config['SPOTIFY_CLIENT_SECRET'],
+                                            config['SPOTIFY_REDIRECT_URI'], scope=self.scope, cache_path=self.cache)
+
+        self.access_token = ""
+        self.refresh_token = ""
+
+    def get_spotipy_oath_uri(self):
+        auth_url = self.sp_oauth.get_authorize_url()
+        return auth_url
+
+    def generate_access_tokens(self, url):
+        code = self.sp_oauth.parse_response_code(url)
+        token_info = self.sp_oauth.get_access_token(code)
+        self.access_token = token_info['access_token']
+        self.refresh_token = token_info['refresh_token']
+
+    def refresh_access_tokens(self):
+        token_info = self.sp_oauth.refresh_access_token(self.refresh_token)
+        self.access_token = token_info['access_token']
+        self.refresh_token = token_info['refresh_token']
+
+    def get_token_from_cache(self):
+        token_info = self.sp_oauth.get_cached_token()
+        self.access_token = token_info['access_token']
+        self.refresh_token = token_info['refresh_token']
 
     def generate_spotipy_obj(self):
         """
-        Creates a Spotify auth token and generates a Spotipy obj on successful authentication
+        Refreshes Spotify auth token and generates a Spotipy obj on successful authentication
         :return: Spotipy Object
         :rtype: object
         """
-        try:
-            # create token
-            token = util.prompt_for_user_token(self.username, self.scope)
-        except:
-            # clear cache
-            os.remove(f".cache-{self.username}")
-            # create token
-            token = util.prompt_for_user_token(self.username, self.scope)
-        spotipy_obj = spotipy.Spotify(auth=token)
+        self.refresh_access_tokens()
+        spotipy_obj = spotipy.Spotify(auth=self.access_token)
         return spotipy_obj
 
     def get_current_user(self):
@@ -81,8 +94,8 @@ class SpotifyConnector(object):
         # generate spotipy obj
         spotipy_obj = self.generate_spotipy_obj()
 
-        current_user = spotipy_obj.current_user()
-        return current_user
+        self.current_user = spotipy_obj.current_user()
+        return self.current_user
 
     def get_playing_song_and_artists(self):
         """
@@ -112,7 +125,7 @@ class SpotifyConnector(object):
 
             # parse song info
             song_obj = {
-                'username': self.username,
+                'username': self.current_user['id'],
                 'song_id': current_song['item']['id'],
                 'song_name': current_song['item']['name'],
                 'song_popularity': current_song['item']['popularity'],
@@ -169,7 +182,7 @@ def get_username_from_args():
 def debug():
     username = get_username_from_args()
 
-    spotify_connector = SpotifyConnector(username=username)
+    spotify_connector = SpotifyConnector('testcache')
     current_song, current_artists = spotify_connector.get_playing_song_and_artists()
     print(current_song)
     print(current_artists)
