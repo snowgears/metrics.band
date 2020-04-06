@@ -6,7 +6,6 @@ import time
 
 
 # TODO add debug printing
-# TODO get spotify info from a config file
 
 class SpotifyConnector(object):
     """
@@ -55,6 +54,7 @@ class SpotifyConnector(object):
 
         self.access_token = ""
         self.refresh_token = ""
+        self.previous_payload = {}
 
     def get_spotipy_oath_uri(self):
         auth_url = self.sp_oauth.get_authorize_url()
@@ -108,7 +108,8 @@ class SpotifyConnector(object):
         # get currently playing song
         current_song = spotipy_obj.current_user_playing_track()
 
-        if current_song is not None and current_song['is_playing']:
+        if current_song is not None and current_song['is_playing'] and current_song[
+            'currently_playing_type'] == 'track':
 
             # get current song artists
             artists = current_song['item']['artists']
@@ -167,6 +168,15 @@ class SpotifyConnector(object):
         }
 
         return song_features_obj
+
+    def get_spotify_snapshot_payload(self):
+        # todo consolidate all datapoints into this single one
+        current_song, current_artists = self.get_playing_song_and_artists()
+        if current_song is not None:
+            song_features = self.get_song_features(current_song['song_id'])
+
+        # payload
+        print()
 
 
 def get_username_from_args():
