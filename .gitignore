@@ -7,6 +7,12 @@
 /python/__pycache__
 /python/.idea
 
+# cookies
+.kevin
+.tanner
+.cheeto
+.scott
+
 # testing
 /coverage
 
