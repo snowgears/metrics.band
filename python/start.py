@@ -65,7 +65,12 @@ if __name__ == "__main__":
 
 
     def query_spotify(sc):
-        payloads = []
+
+        try:
+            with open('payload_backups.pkl', 'rb') as f:
+                payloads = pickle.load(f)
+        except:
+            payloads = []
 
         payload1 = [spotify_connector1.get_spotify_snapshot_payload()]
         payload2 = [spotify_connector2.get_spotify_snapshot_payload()]
