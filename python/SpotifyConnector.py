@@ -65,6 +65,7 @@ class SpotifyConnector(object):
         self.previous_artist_list = {}
         self.previous_song_features = {}
         self.previous_artist_info = {}
+        self.previous_album_info = {}
 
     def get_spotipy_oath_uri(self):
         auth_url = self.sp_oauth.get_authorize_url()
@@ -205,16 +206,32 @@ class SpotifyConnector(object):
 
         return artists_info_list
 
+    def get_album_info(self, song_id_list):
+        # generate spotipy obj
+        spotipy_obj = self.generate_spotipy_obj()
+        # get song features
+        track_info = spotipy_obj.tracks(song_id_list)
+
+        album_info_obj = {
+            'album_id': track_info['tracks'][0]['album']['id'],
+            'release_date': track_info['tracks'][0]['album']['release_date'],
+            'album_name': track_info['tracks'][0]['album']['name'][:40]
+        }
+
+        return album_info_obj
+
     def get_spotify_snapshot_payload(self):
         current_song, current_artists = self.get_playing_song_and_artists()
         if current_song is not None:
             if current_song['song_id'] != self.previous_playing_song['song_id']:
                 song_features = self.get_song_features(current_song['song_id'])
                 artists_info = self.get_artists_info(current_song['artists'])
+                album_info = self.get_album_info([current_song['song_id']])
 
             else:
                 song_features = self.previous_song_features
                 artists_info = self.previous_artist_info
+                album_info = self.previous_album_info
 
             # if self.current_user['email']:
             #     email = self.current_user['email']
@@ -241,7 +258,11 @@ class SpotifyConnector(object):
                     'valence': song_features['valence'],
                     'tempo': song_features['tempo'],
                     'duration': song_features['duration'],
-                    'artists': artists_info
+                    'artists': artists_info,
+                    'album_name': album_info['album_name'],
+                    'album_id': album_info['album_id'],
+                    'release_date': album_info['release_date']
+
                 }
             }
 
@@ -250,6 +271,7 @@ class SpotifyConnector(object):
             self.previous_artist_list = current_artists
             self.previous_song_features = song_features
             self.previous_artist_info = artists_info
+            self.previous_album_info = album_info
 
             return payload
 
