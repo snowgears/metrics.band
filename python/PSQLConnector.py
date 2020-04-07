@@ -49,12 +49,13 @@ class PSQLConnector(object):
             for listen_snapshot in listen_snapshot_list:
                 listen_id = self.insert_record(listen_snapshot, False)
                 listen_id_list.append(listen_id)
-                
+                print(listen_snapshot)
+
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
         finally:
             self.close_connection()
-    
+
         return listen_id_list
 
     # this is the only method needed to be externally called
@@ -92,7 +93,7 @@ class PSQLConnector(object):
         finally:
             if close_connection:
                 self.close_connection()
-    
+
         return listen_id
 
     def insert_enduser(self, user_email):
@@ -109,7 +110,7 @@ class PSQLConnector(object):
             self.connection.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-    
+
         return enduser_id
 
     def insert_genres(self, genres):
@@ -133,7 +134,7 @@ class PSQLConnector(object):
             self.connection.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-    
+
         return genre_id_list
 
     def insert_genre_set(self, genre_id_list):
@@ -142,7 +143,7 @@ class PSQLConnector(object):
 
         # limit to 10 genres
         genre_id_list = genre_id_list[:10]
-        
+
 
         # build out the insert queries for columns and values
         columns = []
@@ -169,7 +170,7 @@ class PSQLConnector(object):
             sql = "SELECT genre_set_id FROM metrics_band.genre_set WHERE "+col_val_conditional_str;
             # execute the SELECT statement
             self.cursor.execute(sql)
-            
+
             fetchone = self.cursor.fetchone();
             if(fetchone is not None):
                 # get the generated id back
@@ -186,7 +187,7 @@ class PSQLConnector(object):
             self.connection.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-    
+
         return genre_set_id
 
     def insert_artist(self, artist, genre_set_id):
@@ -256,7 +257,7 @@ class PSQLConnector(object):
             self.connection.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-    
+
         return artist_set_id
 
     def insert_song(self, song_info, artist_set_id):
@@ -308,5 +309,5 @@ class PSQLConnector(object):
             self.connection.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
-    
+
         return listen_id

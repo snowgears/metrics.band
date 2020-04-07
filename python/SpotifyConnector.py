@@ -186,11 +186,15 @@ class SpotifyConnector(object):
         artists_info_list = []
 
         for artist_info in artists_info['artists']:
+            if len(artist_info['genres']) == 0:
+                genre = ['no genre']
+            else:
+                genre = artist_info['genres']
             artist_info_obj = {
                 'artist_id': artist_info['id'],
-                'artist_name': artist_info['name'],
+                'artist_name': artist_info['name'][:40],
                 'popularity': artist_info['popularity'],
-                'generes': artist_info['genres']
+                'genres': genre
             }
 
             artists_info_list.extend([artist_info_obj])
@@ -198,7 +202,6 @@ class SpotifyConnector(object):
         return artists_info_list
 
     def get_spotify_snapshot_payload(self):
-        # todo consolidate all datapoints into this single one
         current_song, current_artists = self.get_playing_song_and_artists()
         if current_song is not None:
             if current_song['song_id'] != self.previous_playing_song['song_id']:
@@ -209,13 +212,21 @@ class SpotifyConnector(object):
                 song_features = self.previous_song_features
                 artists_info = self.previous_artist_info
 
+            # if self.current_user['email']:
+            #     email = self.current_user['email']
+            # else:
+            try:
+                email = self.current_user['email']
+            except:
+                email = 'scttcndn@gmail.com'
+
             payload = {
                 'username': current_song['username'],
-                'email': self.current_user['email'],
+                'email': email,
                 'listen_timestamp': current_song['song_timestamp'],
                 'song_info': {
                     'song_id': current_song['song_id'],
-                    'song_name': current_song['song_name'],
+                    'song_name': current_song['song_name'][:40],
                     'song_popularity': current_song['song_popularity'],
                     'danceability': song_features['danceability'],
                     'energy': song_features['energy'],
@@ -238,7 +249,6 @@ class SpotifyConnector(object):
             self.previous_artist_list = current_artists
             self.previous_song_features = song_features
             self.previous_artist_info = artists_info
-
 
             return payload
 
