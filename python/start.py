@@ -105,7 +105,7 @@ if __name__ == "__main__":
         with open('payload_backups.pkl', 'wb') as f:
             pickle.dump(payloads, f)
 
-        s.enter(10, 1, query_spotify, (sc,))
+        s.enter(120, 1, query_spotify, (sc,))
 
 
     s.enter(1, 1, query_spotify, (s,))
