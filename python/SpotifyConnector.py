@@ -6,6 +6,7 @@ import time
 
 
 # TODO add debug printing
+# TODO get album/release info
 
 class SpotifyConnector(object):
     """
@@ -91,7 +92,10 @@ class SpotifyConnector(object):
         :return: Spotipy Object
         :rtype: object
         """
-        self.refresh_access_tokens()
+        try:
+            self.refresh_access_tokens()
+        except:
+            print('Token Refresh Failed for ' + self.current_user['display_name'])
         spotipy_obj = spotipy.Spotify(auth=self.access_token)
         return spotipy_obj
 
@@ -215,10 +219,7 @@ class SpotifyConnector(object):
             # if self.current_user['email']:
             #     email = self.current_user['email']
             # else:
-            try:
-                email = self.current_user['email']
-            except:
-                email = 'scttcndn@gmail.com'
+            email = self.current_user['display_name']
 
             payload = {
                 'username': current_song['username'],
