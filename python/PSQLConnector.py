@@ -1,6 +1,7 @@
 import psycopg2
 import datetime
 
+
 class PSQLConnector(object):
     def __init__(self, host, port, dbname, dbuser, dbpassword):
         self.dbname = dbname
@@ -38,7 +39,8 @@ class PSQLConnector(object):
         for row in records:
             print(row)
 
-        self.close_connection(connection=connection, cursor=cursor)
+        self.close_connection()
+        return records
 
     # this is the only method needed to be externally called
     def insert_record_list(self, listen_snapshot_list):
@@ -122,7 +124,7 @@ class PSQLConnector(object):
             try:
                 sql = "INSERT INTO metrics_band.genre (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name=%s RETURNING genre_id";
                 # execute the INSERT statement
-                self.cursor.execute(sql, (genre_name,genre_name))
+                self.cursor.execute(sql, (genre_name, genre_name))
                 # get the generated id back
                 genre_id = self.cursor.fetchone()[0]
                 genre_id_list.append(genre_id)
@@ -144,40 +146,39 @@ class PSQLConnector(object):
         # limit to 10 genres
         genre_id_list = genre_id_list[:10]
 
-
         # build out the insert queries for columns and values
         columns = []
         values = []
         i = 1
         for genre_id in genre_id_list:
-            columns.append('genre'+str(i))
+            columns.append('genre' + str(i))
             values.append('%s')
             i = i + 1
         columns_str = ', '.join(columns)
         values_str = ', '.join(values)
 
         # build out the select query for the WHERE conditional
-        i=0
+        i = 0
         col_val_conditional = []
         for i in range(0, len(columns)):
-            col_val_conditional.append(columns[i] + "="+ str(genre_id_list[i]))
+            col_val_conditional.append(columns[i] + "=" + str(genre_id_list[i]))
         col_val_conditional_str = ' AND '.join(col_val_conditional)
         # print(col_val_conditional_str)
 
         try:
             # first check if the genre_set already exists in the table for those genre values
             genre_set_id = None
-            sql = "SELECT genre_set_id FROM metrics_band.genre_set WHERE "+col_val_conditional_str;
+            sql = "SELECT genre_set_id FROM metrics_band.genre_set WHERE " + col_val_conditional_str;
             # execute the SELECT statement
             self.cursor.execute(sql)
 
             fetchone = self.cursor.fetchone();
-            if(fetchone is not None):
+            if (fetchone is not None):
                 # get the generated id back
                 genre_set_id = fetchone[0]
             else:
                 # if there isnt a genre_set that already exists, create a new entry for that genre set
-                sql = "INSERT INTO metrics_band.genre_set ("+columns_str+") VALUES ("+values_str+") RETURNING genre_set_id";
+                sql = "INSERT INTO metrics_band.genre_set (" + columns_str + ") VALUES (" + values_str + ") RETURNING genre_set_id";
                 # execute the INSERT statement
                 self.cursor.execute(sql, genre_id_list)
                 # get the generated id back
@@ -199,7 +200,7 @@ class PSQLConnector(object):
 
             sql = "INSERT INTO metrics_band.artist (name, spotify_id, genre_set_id) VALUES (%s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING artist_id";
             # execute the INSERT statement
-            self.cursor.execute(sql, (artist_name,spotify_artist_id, genre_set_id, spotify_artist_id))
+            self.cursor.execute(sql, (artist_name, spotify_artist_id, genre_set_id, spotify_artist_id))
             # get the generated id back
             artist_id = self.cursor.fetchone()[0]
 
@@ -222,7 +223,7 @@ class PSQLConnector(object):
         values = []
         i = 1
         for artist_id in artist_id_list:
-            columns.append('artist'+str(i))
+            columns.append('artist' + str(i))
             values.append('%s')
             i = i + 1
         columns_str = ', '.join(columns)
@@ -231,23 +232,23 @@ class PSQLConnector(object):
         # build out the select query for the WHERE conditional
         col_val_conditional = []
         for i in range(0, len(columns)):
-            col_val_conditional.append(columns[i] + "="+ str(artist_id_list[i]))
+            col_val_conditional.append(columns[i] + "=" + str(artist_id_list[i]))
         col_val_conditional_str = ' AND '.join(col_val_conditional)
 
         try:
             # first check if the artist_set already exists in the table for those artist id values
             artist_set_id = None
-            sql = "SELECT artist_set_id FROM metrics_band.artist_set WHERE "+col_val_conditional_str;
+            sql = "SELECT artist_set_id FROM metrics_band.artist_set WHERE " + col_val_conditional_str;
             # execute the SELECT statement
             self.cursor.execute(sql)
 
             fetchone = self.cursor.fetchone();
-            if(fetchone is not None):
+            if (fetchone is not None):
                 # get the generated id back
                 artist_set_id = fetchone[0]
             else:
                 # if there isnt a artist_set that already exists, create a new entry for that artist_set
-                sql = "INSERT INTO metrics_band.artist_set ("+columns_str+") VALUES ("+values_str+") RETURNING artist_set_id";
+                sql = "INSERT INTO metrics_band.artist_set (" + columns_str + ") VALUES (" + values_str + ") RETURNING artist_set_id";
                 # execute the INSERT statement
                 self.cursor.execute(sql, artist_id_list)
                 # get the generated id back
@@ -281,7 +282,9 @@ class PSQLConnector(object):
 
             sql = "INSERT INTO metrics_band.song (spotify_id, song_name, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration, artist_set_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id";
             # execute the INSERT statement
-            self.cursor.execute(sql, (spotify_song_id, song_name, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration, artist_set_id, spotify_song_id))
+            self.cursor.execute(sql, (
+                spotify_song_id, song_name, danceability, energy, key, loudness, mode, speechiness, acousticness,
+                instrumentalness, liveness, valence, tempo, duration, artist_set_id, spotify_song_id))
             # get the generated id back
             song_id = self.cursor.fetchone()[0]
 
@@ -291,7 +294,6 @@ class PSQLConnector(object):
             print(error)
 
         return song_id
-
 
     def insert_listen_history(self, user_id, listen_timestamp, song_id):
         # inserts a record into the listen_history table
