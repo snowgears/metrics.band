@@ -4,6 +4,8 @@
 /react/node_modules
 /.pnp
 .pnp.js
+/python/__pycache__
+/python/.idea
 
 # testing
 /coverage

@@ -6,11 +6,13 @@ import sched
 import time
 
 if __name__ == "__main__":
-    songs = []
-    artists = []
-    features = []
 
+    with open('config.json') as f:
+        config = json.load(f)
 
+    psql = PSQLConnector(host=config['psql_host'], port=config['psql_port'], dbname=config['psql_dbname'],
+                         dbuser=config['psql_dbuser'],
+                         dbpassword=config['psql_dbpassword'])
 
     s = sched.scheduler(time.time, time.sleep)
 
@@ -86,8 +88,6 @@ if __name__ == "__main__":
 
         payloads.clear()
 
-        # with open('payloads.pkl', 'wb') as f:
-        #     pickle.dump(payloads_processed, f)
         s.enter(120, 1, query_spotify, (sc,))
 
 
