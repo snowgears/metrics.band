@@ -4,7 +4,7 @@ import sched
 import time
 
 
-# with open('request_currently_results.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
+# with open('request_currentldddy_results.pkl', 'rb') as f:  # Python 3: open(..., 'rb')
 #     request_currently_results = pickle.load(f)
 #
 # features = []
@@ -34,89 +34,92 @@ if __name__ == "__main__":
     features = []
 
     s = sched.scheduler(time.time, time.sleep)
-    spotify_connector1 = SpotifyConnector('kevin')
 
-    print(spotify_connector1.get_spotipy_oath_uri())
-    print('Enter url:')
-    x = input()
-    print(x)
-    spotify_connector1.generate_access_tokens(x)
+    spotify_connector1 = SpotifyConnector('kevin')
+    spotify_connector1.get_token_from_cache()
+    if spotify_connector1.access_token is None:
+        print(spotify_connector1.get_spotipy_oath_uri())
+        print('Enter url:')
+        x = input()
+        print(x)
+        spotify_connector1.generate_access_tokens(x)
 
     spotify_user1 = spotify_connector1.get_current_user()
-
     print(spotify_user1)
 
-    spotify_connector2 = SpotifyConnector('scott')
+    spotify_connector1.get_spotify_snapshot_payload()
 
-    print(spotify_connector2.get_spotipy_oath_uri())
-    print('Enter url:')
-    x = input()
-    spotify_connector2.generate_access_tokens(x)
-
-    spotify_user2 = spotify_connector2.get_current_user()
-
-    print(spotify_user2)
-
-    spotify_connector3 = SpotifyConnector('tanner')
-
-    print(spotify_connector3.get_spotipy_oath_uri())
-    print('Enter url:')
-    x = input()
-    spotify_connector3.generate_access_tokens(x)
-
-    spotify_user3 = spotify_connector3.get_current_user()
-
-    print(spotify_user3)
-
-
-    def query_spotify(sc):
-        current_song, current_artists = spotify_connector1.get_playing_song_and_artists()
-        if current_song is not None:
-            song_features = spotify_connector1.get_song_features(current_song['song_id'])
-
-            print(current_song)
-            print(current_artists)
-            print(song_features)
-
-            songs.extend([current_song])
-            artists.extend(current_artists)
-            features.extend([song_features])
-
-            with open('backups_2.pkl', 'wb') as f:
-                pickle.dump([songs, artists, features], f)
-
-        current_song, current_artists = spotify_connector2.get_playing_song_and_artists()
-        if current_song is not None:
-            song_features = spotify_connector2.get_song_features(current_song['song_id'])
-
-            print(current_song)
-            print(current_artists)
-            print(song_features)
-
-            songs.extend([current_song])
-            artists.extend(current_artists)
-            features.extend([song_features])
-
-            with open('backups_2.pkl', 'wb') as f:
-                pickle.dump([songs, artists, features], f)
-
-        current_song, current_artists = spotify_connector3.get_playing_song_and_artists()
-        if current_song is not None:
-            song_features = spotify_connector3.get_song_features(current_song['song_id'])
-
-            print(current_song)
-            print(current_artists)
-            print(song_features)
-
-            songs.extend([current_song])
-            artists.extend(current_artists)
-            features.extend([song_features])
-
-            with open('backups_2.pkl', 'wb') as f:
-                pickle.dump([songs, artists, features], f)
-
-        s.enter(120, 1, query_spotify, (sc,))
+    # spotify_connector2 = SpotifyConnector('tanner')
+    # spotify_connector2.get_token_from_cache()
+    # if spotify_connector2.access_token is None:
+    #     print(spotify_connector2.get_spotipy_oath_uri())
+    #     print('Enter url:')
+    #     x = input()
+    #     spotify_connector2.generate_access_tokens(x)
+    #
+    # spotify_user2 = spotify_connector2.get_current_user()
+    # print(spotify_user2)
+    #
+    # spotify_connector3 = SpotifyConnector('scott')
+    # spotify_connector3.get_token_from_cache()
+    # if spotify_connector3.access_token is None:
+    #     print(spotify_connector3.get_spotipy_oath_uri())
+    #     print('Enter url:')
+    #     x = input()
+    #     spotify_connector3.generate_access_tokens(x)
+    #
+    # spotify_user3 = spotify_connector3.get_current_user()
+    # print(spotify_user3)
 
 
-    s.enter(1, 1, query_spotify, (s,))
-    s.run()
+    # def query_spotify(sc):
+    #     current_song, current_artists = spotify_connector1.get_playing_song_and_artists()
+    #     if current_song is not None:
+    #         song_features = spotify_connector1.get_song_features(current_song['song_id'])
+    #
+    #         print(current_song)
+    #         print(current_artists)
+    #         print(song_features)
+    #
+    #         songs.extend([current_song])
+    #         artists.extend(current_artists)
+    #         features.extend([song_features])
+    #
+    #         with open('backups_4_6_2.pkl', 'wb') as f:
+    #             pickle.dump([songs, artists, features], f)
+    #
+    #     current_song, current_artists = spotify_connector2.get_playing_song_and_artists()
+    #     if current_song is not None:
+    #         song_features = spotify_connector2.get_song_features(current_song['song_id'])
+    #
+    #         print(current_song)
+    #         print(current_artists)
+    #         print(song_features)
+    #
+    #         songs.extend([current_song])
+    #         artists.extend(current_artists)
+    #         features.extend([song_features])
+    #
+    #         with open('backups_4_6_2.pkl', 'wb') as f:
+    #             pickle.dump([songs, artists, features], f)
+    #
+    #     current_song, current_artists = spotify_connector3.get_playing_song_and_artists()
+    #     if current_song is not None:
+    #         song_features = spotify_connector3.get_song_features(current_song['song_id'])
+    #
+    #         print(current_song)
+    #         print(current_artists)
+    #         print(song_features)
+    #
+    #         songs.extend([current_song])
+    #         artists.extend(current_artists)
+    #         features.extend([song_features])
+    #
+    #         with open('backups_4_6_2.pkl', 'wb') as f:
+    #             pickle.dump([songs, artists, features], f)
+    #
+    #     s.enter(120, 1, query_spotify, (sc,))
+
+
+    # s.enter(1, 1, query_spotify, (s,))
+    # s.run()

@@ -6,7 +6,6 @@ import time
 
 
 # TODO add debug printing
-# TODO get spotify info from a config file
 
 class SpotifyConnector(object):
     """
@@ -55,6 +54,16 @@ class SpotifyConnector(object):
 
         self.access_token = ""
         self.refresh_token = ""
+
+        self.current_user = None
+
+        self.previous_payload = {}
+        self.previous_playing_song = {
+            'song_id': None
+        }
+        self.previous_artist_list = {}
+        self.previous_song_features = {}
+        self.previous_artist_info = {}
 
     def get_spotipy_oath_uri(self):
         auth_url = self.sp_oauth.get_authorize_url()
@@ -108,7 +117,8 @@ class SpotifyConnector(object):
         # get currently playing song
         current_song = spotipy_obj.current_user_playing_track()
 
-        if current_song is not None and current_song['is_playing']:
+        if current_song is not None and current_song['is_playing'] and current_song[
+            'currently_playing_type'] == 'track':
 
             # get current song artists
             artists = current_song['item']['artists']
@@ -134,7 +144,6 @@ class SpotifyConnector(object):
                 'artists': [d['artist_spotify_id'] for d in artists_list],
                 'type': current_song['currently_playing_type']
             }
-
             return song_obj, artists_list
         return None, None
 
@@ -167,6 +176,73 @@ class SpotifyConnector(object):
         }
 
         return song_features_obj
+
+    def get_artists_info(self, artists_list):
+        # generate spotipy obj
+        spotipy_obj = self.generate_spotipy_obj()
+        # get song features
+        artists_info = spotipy_obj.artists(artists_list)
+
+        artists_info_list = []
+
+        for artist_info in artists_info['artists']:
+            artist_info_obj = {
+                'artist_id': artist_info['id'],
+                'artist_name': artist_info['name'],
+                'popularity': artist_info['popularity'],
+                'generes': artist_info['genres']
+            }
+
+            artists_info_list.extend([artist_info_obj])
+
+        return artists_info_list
+
+    def get_spotify_snapshot_payload(self):
+        # todo consolidate all datapoints into this single one
+        current_song, current_artists = self.get_playing_song_and_artists()
+        if current_song is not None:
+            if current_song['song_id'] != self.previous_playing_song['song_id']:
+                song_features = self.get_song_features(current_song['song_id'])
+                artists_info = self.get_artists_info(current_song['artists'])
+
+            else:
+                song_features = self.previous_song_features
+                artists_info = self.previous_artist_info
+
+            payload = {
+                'username': current_song['username'],
+                'email': self.current_user['email'],
+                'listen_timestamp': current_song['song_timestamp'],
+                'song_info': {
+                    'song_id': current_song['song_id'],
+                    'song_name': current_song['song_name'],
+                    'song_popularity': current_song['song_popularity'],
+                    'danceability': song_features['danceability'],
+                    'energy': song_features['energy'],
+                    'key': song_features['key'],
+                    'loudness': song_features['loudness'],
+                    'mode': song_features['mode'],
+                    'speechiness': song_features['speechiness'],
+                    'acousticness': song_features['acousticness'],
+                    'instrumentalness': song_features['instrumentalness'],
+                    'liveness': song_features['liveness'],
+                    'valence': song_features['valence'],
+                    'tempo': song_features['tempo'],
+                    'duration': song_features['duration'],
+                    'artists': artists_info
+                }
+            }
+
+            self.previous_payload = payload
+            self.previous_playing_song = current_song
+            self.previous_artist_list = current_artists
+            self.previous_song_features = song_features
+            self.previous_artist_info = artists_info
+
+
+            return payload
+
+        return None
 
 
 def get_username_from_args():
