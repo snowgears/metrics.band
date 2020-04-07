@@ -215,10 +215,8 @@ class SpotifyConnector(object):
             # if self.current_user['email']:
             #     email = self.current_user['email']
             # else:
-            try:
-                email = self.current_user['email']
-            except:
-                email = 'scttcndn@gmail.com'
+            email = self.current_user['display_name']
+
 
             payload = {
                 'username': current_song['username'],
