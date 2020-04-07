@@ -30,11 +30,10 @@ class PSQLConnector(object):
     def sql_query(self, sql):
         # establish connection
         connection = self.connect()
-        cursor = connection.cursor()
 
         # execute sql
-        cursor.execute(sql)
-        records = cursor.fetchall()
+        self.cursor.execute(sql)
+        records = self.cursor.fetchall()
 
         for row in records:
             print(row)
