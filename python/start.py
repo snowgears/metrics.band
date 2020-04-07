@@ -10,8 +10,7 @@ if __name__ == "__main__":
     artists = []
     features = []
 
-    psql = PSQLConnector(host='34.94.77.213', port=5432, dbname='postgres', dbuser="postgres",
-                         dbpassword='murda77murda')
+
 
     s = sched.scheduler(time.time, time.sleep)
 
