@@ -77,18 +77,30 @@ if __name__ == "__main__":
         payloads.extend(payload3)
         payloads.extend(payload4)
 
-        payloads_processed = list(filter(None, payloads))
+        payloads = list(filter(None, payloads))
 
         print('\n')
-        print(payloads_processed)
+        print(len(payloads))
+        print(payloads)
+        print(payload1)
+        print(payload2)
+        print(payload3)
+        print(payload4)
         print('\n')
 
         psql.connect()
-        psql.insert_record_list(payloads_processed)
+        response = psql.insert_record_list(payloads)
 
-        payloads.clear()
+        if list(dict.fromkeys(response))[0] != -1:
+            print('No error. Clearing Queue.')
+            payloads.clear()
 
-        s.enter(120, 1, query_spotify, (sc,))
+        print('Queue: ' + str(len(payloads)))
+
+        with open('payload_backups.pkl', 'wb') as f:
+            pickle.dump(payloads, f)
+
+        s.enter(10, 1, query_spotify, (sc,))
 
 
     s.enter(1, 1, query_spotify, (s,))
