@@ -93,12 +93,12 @@ if __name__ == "__main__":
         print(payload4)
         print('\n')
 
-        psql.connect()
-        response = psql.insert_record_list(payloads)
-
-        if list(dict.fromkeys(response))[0] != -1:
-            print('No error. Clearing Queue.')
-            payloads.clear()
+        # psql.connect()
+        # response = psql.insert_record_list(payloads)
+        #
+        # if list(dict.fromkeys(response))[0] != -1:
+        #     print('No error. Clearing Queue.')
+        #     payloads.clear()
 
         print('Queue: ' + str(len(payloads)))
 
