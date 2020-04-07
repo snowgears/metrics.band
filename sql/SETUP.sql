@@ -23,14 +23,16 @@ CREATE TABLE metrics_band.genre_set(
 	genre5 INT REFERENCES genre(genre_id),
 	genre6 INT REFERENCES genre(genre_id),
 	genre7 INT REFERENCES genre(genre_id),
-	genre8 INT REFERENCES genre(genre_id)
+	genre8 INT REFERENCES genre(genre_id),
+	genre9 INT REFERENCES genre(genre_id),
+	genre10 INT REFERENCES genre(genre_id)
 );
 
 CREATE TABLE metrics_band.artist(
     artist_id SERIAL PRIMARY KEY,
 	name VARCHAR(40),
     spotify_id VARCHAR(40) UNIQUE,
-	genre_set_id INT REFERENCES genre_set(genre_set_id)
+	genre_set_id INT REFERENCES genre_set(genre_set_id) NOT NULL
 );
 
 CREATE TABLE metrics_band.artist_set(
@@ -42,19 +44,20 @@ CREATE TABLE metrics_band.artist_set(
 	artist5 INT REFERENCES artist(artist_id),
 	artist6 INT REFERENCES artist(artist_id),
 	artist7 INT REFERENCES artist(artist_id),
-	artist8 INT REFERENCES artist(artist_id)
+	artist8 INT REFERENCES artist(artist_id),
+	artist9 INT REFERENCES artist(artist_id),
+	artist10 INT REFERENCES artist(artist_id)
 );
 
 CREATE TABLE metrics_band.song(
     song_id SERIAL PRIMARY KEY,
 	spotify_id VARCHAR(40) UNIQUE,
-	artist_set_id INT REFERENCES artist_set(artist_set_id),
+	song_name VARCHAR(60),
+	artist_set_id INT REFERENCES artist_set(artist_set_id) NOT NULL,
 	duration INT,
 	features_populated BOOLEAN,
-	popularity INT,
 	key INT,
 	mode INT,
-	time_signature INT,
 	acousticness REAL,
 	danceability REAL,
 	energy REAL,
