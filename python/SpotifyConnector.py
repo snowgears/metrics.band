@@ -6,7 +6,6 @@ import time
 
 
 # TODO add debug printing
-# TODO get album/release info
 
 class SpotifyConnector(object):
     """
@@ -68,21 +67,36 @@ class SpotifyConnector(object):
         self.previous_album_info = {}
 
     def get_spotipy_oath_uri(self):
+        """
+        Generates a Spotify OATH URI
+        :return: Spotify OATH URI
+        :rtype: str
+        """
         auth_url = self.sp_oauth.get_authorize_url()
         return auth_url
 
     def generate_access_tokens(self, url):
+        """
+        Generates an access token given a URL from a callback URL
+        :param url: str
+        """
         code = self.sp_oauth.parse_response_code(url)
         token_info = self.sp_oauth.get_access_token(code)
         self.access_token = token_info['access_token']
         self.refresh_token = token_info['refresh_token']
 
     def refresh_access_tokens(self):
+        """
+        Refreshes access tokens using existing refresh token
+        """
         token_info = self.sp_oauth.refresh_access_token(self.refresh_token)
         self.access_token = token_info['access_token']
         self.refresh_token = token_info['refresh_token']
 
     def get_token_from_cache(self):
+        """
+        Fetches access tokens from cache
+        """
         token_info = self.sp_oauth.get_cached_token()
         self.access_token = token_info['access_token']
         self.refresh_token = token_info['refresh_token']
@@ -102,8 +116,9 @@ class SpotifyConnector(object):
 
     def get_current_user(self):
         """
-        TODO document this shit
-        :return:
+        Queries Spotify for current user information
+        :return: current_user
+        :rtype: object
         """
         # generate spotipy obj
         spotipy_obj = self.generate_spotipy_obj()
@@ -183,6 +198,12 @@ class SpotifyConnector(object):
         return song_features_obj
 
     def get_artists_info(self, artists_list):
+        """
+        Queries Spotify for artist information given a list of artists
+        :param artists_list: list
+        :return: artists_info_list
+        :rtype: list
+        """
         # generate spotipy obj
         spotipy_obj = self.generate_spotipy_obj()
         # get song features
@@ -207,6 +228,12 @@ class SpotifyConnector(object):
         return artists_info_list
 
     def get_album_info(self, song_id_list):
+        """
+        Queries Spotify for album information given a list of song ids
+        :param song_id_list: list
+        :return: album_info_obj
+        :rtype: object
+        """
         # generate spotipy obj
         spotipy_obj = self.generate_spotipy_obj()
         # get song features
@@ -221,6 +248,12 @@ class SpotifyConnector(object):
         return album_info_obj
 
     def get_spotify_snapshot_payload(self):
+        """
+        Generates a payload object to send to psql database. If the currently playing song is the same as the last,
+        the previous data is included in the payload
+        :return: payload
+        :rtype: object
+        """
         current_song, current_artists = self.get_playing_song_and_artists()
         if current_song is not None:
             if current_song['song_id'] != self.previous_playing_song['song_id']:
@@ -276,26 +309,3 @@ class SpotifyConnector(object):
             return payload
 
         return None
-
-
-def get_username_from_args():
-    # get username from args
-    if len(sys.argv) > 1:
-        username = sys.argv[1]
-    else:
-        print("Usage: %s username" % (sys.argv[0],))
-        sys.exit()
-    return username
-
-
-def debug():
-    username = get_username_from_args()
-
-    spotify_connector = SpotifyConnector('testcache')
-    current_song, current_artists = spotify_connector.get_playing_song_and_artists()
-    print(current_song)
-    print(current_artists)
-
-
-if __name__ == "__main__":
-    debug()
