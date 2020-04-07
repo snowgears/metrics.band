@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
         print('\n')
         print(len(payloads))
-        print(payloads)
+        # print(payloads)
         print(payload1)
         print(payload2)
         print(payload3)
