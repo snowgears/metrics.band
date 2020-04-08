@@ -29,17 +29,18 @@ class PSQLConnector(object):
 
     def sql_query(self, sql):
         # establish connection
-        connection = self.connect()
-        cursor = connection.cursor()
+        self.connect()
 
         # execute sql
-        cursor.execute(sql)
-        records = cursor.fetchall()
+        self.cursor.execute(sql)
+        records = self.cursor.fetchall()
 
         for row in records:
             print(row)
 
-        self.close_connection(connection=connection, cursor=cursor)
+        self.close_connection()
+
+        return records
 
     # this is the only method needed to be externally called
     def insert_record_list(self, listen_snapshot_list):
