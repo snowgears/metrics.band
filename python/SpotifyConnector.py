@@ -283,7 +283,7 @@ class SpotifyConnector(object):
                 'listen_timestamp': current_song['song_timestamp'],
                 'song_info': {
                     'song_id': current_song['song_id'],
-                    'song_name': current_song['song_name'][:40],
+                    'song_name': current_song['song_name'][:60],
                     'song_popularity': current_song['song_popularity'],
                     'danceability': song_features['danceability'],
                     'energy': song_features['energy'],
