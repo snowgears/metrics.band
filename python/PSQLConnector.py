@@ -1,7 +1,6 @@
 import psycopg2
 import datetime
 
-
 class PSQLConnector(object):
     def __init__(self, host, port, dbname, dbuser, dbpassword):
         self.dbname = dbname
@@ -30,16 +29,16 @@ class PSQLConnector(object):
     def sql_query(self, sql):
         # establish connection
         connection = self.connect()
+        cursor = connection.cursor()
 
         # execute sql
-        self.cursor.execute(sql)
-        records = self.cursor.fetchall()
+        cursor.execute(sql)
+        records = cursor.fetchall()
 
         for row in records:
             print(row)
 
-        self.close_connection()
-        return records
+        self.close_connection(connection=connection, cursor=cursor)
 
     # this is the only method needed to be externally called
     def insert_record_list(self, listen_snapshot_list):
@@ -50,7 +49,6 @@ class PSQLConnector(object):
             for listen_snapshot in listen_snapshot_list:
                 listen_id = self.insert_record(listen_snapshot, False)
                 listen_id_list.append(listen_id)
-                print(listen_snapshot)
 
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
@@ -70,25 +68,30 @@ class PSQLConnector(object):
             song_info = listen_snapshot['song_info']
             artists = song_info['artists']
 
+            # insert the enduser
             enduser_id = self.insert_enduser(user_email)
+            # insert the album
+            album_id = self.insert_album(song_info)
+            # insert the song
+            song_id = self.insert_song(song_info, album_id)
 
-            artist_id_list = []
             for artist in artists:
+                # insert the artist and return artist_id
+                artist_id = self.insert_artist(artist)
+
+                # insert a song_artist record for every artist
+                song_artist_id = self.insert_song_artist(song_id, artist_id)
+
                 # insert each genre and return that a list of all genre ids
                 genre_id_list = self.insert_genres(artist['genres'])
-                # insert those genre ids as a genre set and return the genre_set_id
-                genre_set_id = self.insert_genre_set(genre_id_list)
-                # insert the artist along with the artists genre set id and get the artist_id
-                artist_id = self.insert_artist(artist, genre_set_id)
-                # add artist id to artist id list
-                artist_id_list.append(artist_id)
 
-            # insert the artist id list as a artist_set and get the artist_set_id
-            artist_set_id = self.insert_artist_set(artist_id_list)
-            # insert the song along with its artist_set_id
-            song_id = self.insert_song(song_info, artist_set_id)
+                for genre_id in genre_id_list:
+                    # insert an artist_genre record for every genre id
+                    artist_genre_id = self.insert_artist_genre(artist_id, genre_id)
+
             # insert the listen record
             listen_id = self.insert_listen_history(enduser_id, listen_timestamp, song_id)
+
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
         finally:
@@ -123,7 +126,7 @@ class PSQLConnector(object):
             try:
                 sql = "INSERT INTO metrics_band.genre (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name=%s RETURNING genre_id";
                 # execute the INSERT statement
-                self.cursor.execute(sql, (genre_name, genre_name))
+                self.cursor.execute(sql, (genre_name,genre_name))
                 # get the generated id back
                 genre_id = self.cursor.fetchone()[0]
                 genre_id_list.append(genre_id)
@@ -138,68 +141,16 @@ class PSQLConnector(object):
 
         return genre_id_list
 
-    def insert_genre_set(self, genre_id_list):
-        # inserts a record into the genre table
-        # genre_list = list of genre ids
-
-        # limit to 10 genres
-        genre_id_list = genre_id_list[:10]
-
-        # build out the insert queries for columns and values
-        columns = []
-        values = []
-        i = 1
-        for genre_id in genre_id_list:
-            columns.append('genre' + str(i))
-            values.append('%s')
-            i = i + 1
-        columns_str = ', '.join(columns)
-        values_str = ', '.join(values)
-
-        # build out the select query for the WHERE conditional
-        i = 0
-        col_val_conditional = []
-        for i in range(0, len(columns)):
-            col_val_conditional.append(columns[i] + "=" + str(genre_id_list[i]))
-        col_val_conditional_str = ' AND '.join(col_val_conditional)
-        # print(col_val_conditional_str)
-
-        try:
-            # first check if the genre_set already exists in the table for those genre values
-            genre_set_id = None
-            sql = "SELECT genre_set_id FROM metrics_band.genre_set WHERE " + col_val_conditional_str;
-            # execute the SELECT statement
-            self.cursor.execute(sql)
-
-            fetchone = self.cursor.fetchone();
-            if (fetchone is not None):
-                # get the generated id back
-                genre_set_id = fetchone[0]
-            else:
-                # if there isnt a genre_set that already exists, create a new entry for that genre set
-                sql = "INSERT INTO metrics_band.genre_set (" + columns_str + ") VALUES (" + values_str + ") RETURNING genre_set_id";
-                # execute the INSERT statement
-                self.cursor.execute(sql, genre_id_list)
-                # get the generated id back
-                genre_set_id = self.cursor.fetchone()[0]
-
-            # commit the changes to the database
-            self.connection.commit()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print(error)
-
-        return genre_set_id
-
-    def insert_artist(self, artist, genre_set_id):
+    def insert_artist(self, artist):
         # inserts a record into the artist table
 
         try:
             spotify_artist_id = artist['artist_id']
             artist_name = artist['artist_name']
 
-            sql = "INSERT INTO metrics_band.artist (name, spotify_id, genre_set_id) VALUES (%s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING artist_id";
+            sql = "INSERT INTO metrics_band.artist (name, spotify_id) VALUES (%s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING artist_id";
             # execute the INSERT statement
-            self.cursor.execute(sql, (artist_name, spotify_artist_id, genre_set_id, spotify_artist_id))
+            self.cursor.execute(sql, (artist_name,spotify_artist_id, spotify_artist_id))
             # get the generated id back
             artist_id = self.cursor.fetchone()[0]
 
@@ -210,57 +161,46 @@ class PSQLConnector(object):
 
         return artist_id
 
-    def insert_artist_set(self, artist_id_list):
-        # inserts a record into the artist set table
-        # artist_id_list = list of genre ids
+    def insert_album(self, song_info):
+        # inserts a record into the album table
 
-        # limit to 10 artists
-        artist_id_list = artist_id_list[:10]
-
-        # build out the insert queries for columns and values
-        columns = []
-        values = []
-        i = 1
-        for artist_id in artist_id_list:
-            columns.append('artist' + str(i))
-            values.append('%s')
-            i = i + 1
-        columns_str = ', '.join(columns)
-        values_str = ', '.join(values)
-
-        # build out the select query for the WHERE conditional
-        col_val_conditional = []
-        for i in range(0, len(columns)):
-            col_val_conditional.append(columns[i] + "=" + str(artist_id_list[i]))
-        col_val_conditional_str = ' AND '.join(col_val_conditional)
-
+        album_id = -1
         try:
-            # first check if the artist_set already exists in the table for those artist id values
-            artist_set_id = None
-            sql = "SELECT artist_set_id FROM metrics_band.artist_set WHERE " + col_val_conditional_str;
-            # execute the SELECT statement
-            self.cursor.execute(sql)
+            spotify_album_id = song_info['album_id']
+            album_name = song_info['album_name']
+            release_date = song_info['release_date']
 
-            fetchone = self.cursor.fetchone();
-            if (fetchone is not None):
-                # get the generated id back
-                artist_set_id = fetchone[0]
-            else:
-                # if there isnt a artist_set that already exists, create a new entry for that artist_set
-                sql = "INSERT INTO metrics_band.artist_set (" + columns_str + ") VALUES (" + values_str + ") RETURNING artist_set_id";
-                # execute the INSERT statement
-                self.cursor.execute(sql, artist_id_list)
-                # get the generated id back
-                artist_set_id = self.cursor.fetchone()[0]
+            sql = "INSERT INTO metrics_band.album (spotify_id, album_name, release_date) VALUES (%s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING album_id";
+            # execute the INSERT statement
+            self.cursor.execute(sql, (spotify_album_id, album_name, release_date, spotify_album_id))
+            # get the generated id back
+            album_id = self.cursor.fetchone()[0]
 
             # commit the changes to the database
             self.connection.commit()
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
 
-        return artist_set_id
+        return album_id
 
-    def insert_song(self, song_info, artist_set_id):
+    def insert_song_artist(self, song_id, artist_id):
+        # inserts a record into the song_artist table
+
+        song_artist_id = -1
+        try:
+            sql = "INSERT INTO metrics_band.song_artist (song_id, artist_id) VALUES (%s, %s) ON CONFLICT ON CONSTRAINT CST_SONG_ARTIST DO UPDATE SET song_id=%s RETURNING song_artist_id";
+            # execute the INSERT statement
+            self.cursor.execute(sql, (song_id, artist_id, song_id))
+            # get the generated id back
+            song_artist_id = self.cursor.fetchone()[0]
+            # commit the changes to the database
+            self.connection.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+        return song_artist_id
+
+    def insert_song(self, song_info, album_id):
         # inserts a record into the song table
 
         try:
@@ -279,11 +219,9 @@ class PSQLConnector(object):
             tempo = song_info['tempo']
             duration = song_info['duration']
 
-            sql = "INSERT INTO metrics_band.song (spotify_id, song_name, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration, artist_set_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id";
+            sql = "INSERT INTO metrics_band.song (spotify_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id";
             # execute the INSERT statement
-            self.cursor.execute(sql, (
-                spotify_song_id, song_name, danceability, energy, key, loudness, mode, speechiness, acousticness,
-                instrumentalness, liveness, valence, tempo, duration, artist_set_id, spotify_song_id))
+            self.cursor.execute(sql, (spotify_song_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration, spotify_song_id))
             # get the generated id back
             song_id = self.cursor.fetchone()[0]
 
@@ -293,6 +231,24 @@ class PSQLConnector(object):
             print(error)
 
         return song_id
+
+    def insert_artist_genre(self, artist_id, genre_id):
+        # inserts a record into the artist_genre table
+
+        artist_genre_id = -1
+        try:
+            sql = "INSERT INTO metrics_band.artist_genre (artist_id, genre_id) VALUES (%s, %s) ON CONFLICT ON CONSTRAINT CST_ARTIST_GENRE DO UPDATE SET artist_id=%s RETURNING artist_genre_id";
+            # execute the INSERT statement
+            self.cursor.execute(sql, (artist_id, genre_id, artist_id))
+            # get the generated id back
+            artist_genre_id = self.cursor.fetchone()[0]
+            # commit the changes to the database
+            self.connection.commit()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+
+        return artist_genre_id
+
 
     def insert_listen_history(self, user_id, listen_timestamp, song_id):
         # inserts a record into the listen_history table
