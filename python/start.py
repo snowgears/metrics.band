@@ -95,13 +95,13 @@ if __name__ == "__main__":
 
         psql.connect()
         response = psql.insert_record_list(payloads)
-        
+
         if -1 not in response:
             print('Succesfully sent ' + str(len(response)) + ' records.')
             print('Clearing Queue.')
             payloads.clear()
         else:
-            print(str(response.count(-1))+' failed records.')
+            print(str(response.count(-1)) + ' failed records.')
 
         print('Queue: ' + str(len(payloads)))
 

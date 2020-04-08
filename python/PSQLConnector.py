@@ -1,6 +1,7 @@
 import psycopg2
 import datetime
 
+
 class PSQLConnector(object):
     def __init__(self, host, port, dbname, dbuser, dbpassword):
         self.dbname = dbname
@@ -126,7 +127,7 @@ class PSQLConnector(object):
             try:
                 sql = "INSERT INTO metrics_band.genre (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name=%s RETURNING genre_id";
                 # execute the INSERT statement
-                self.cursor.execute(sql, (genre_name,genre_name))
+                self.cursor.execute(sql, (genre_name, genre_name))
                 # get the generated id back
                 genre_id = self.cursor.fetchone()[0]
                 genre_id_list.append(genre_id)
@@ -150,7 +151,7 @@ class PSQLConnector(object):
 
             sql = "INSERT INTO metrics_band.artist (name, spotify_id) VALUES (%s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING artist_id";
             # execute the INSERT statement
-            self.cursor.execute(sql, (artist_name,spotify_artist_id, spotify_artist_id))
+            self.cursor.execute(sql, (artist_name, spotify_artist_id, spotify_artist_id))
             # get the generated id back
             artist_id = self.cursor.fetchone()[0]
 
@@ -221,7 +222,9 @@ class PSQLConnector(object):
 
             sql = "INSERT INTO metrics_band.song (spotify_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id";
             # execute the INSERT statement
-            self.cursor.execute(sql, (spotify_song_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration, spotify_song_id))
+            self.cursor.execute(sql, (
+            spotify_song_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness,
+            instrumentalness, liveness, valence, tempo, duration, spotify_song_id))
             # get the generated id back
             song_id = self.cursor.fetchone()[0]
 
@@ -248,7 +251,6 @@ class PSQLConnector(object):
             print(error)
 
         return artist_genre_id
-
 
     def insert_listen_history(self, user_id, listen_timestamp, song_id):
         # inserts a record into the listen_history table

@@ -244,7 +244,6 @@ class SpotifyConnector(object):
         if len(release_date) == 4:
             release_date = release_date + '-01-01'
 
-
         album_info_obj = {
             'album_id': track_info['tracks'][0]['album']['id'],
             'release_date': release_date,
