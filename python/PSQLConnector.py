@@ -292,6 +292,8 @@ class PSQLConnector(object):
             genres = list(dict.fromkeys(rows['genre_name'].tolist()))
             artists = list(dict.fromkeys(rows['artist_name'].tolist()))
 
+            if len(artists) == 1:
+                artists = artists[0]
             single_row = rows.iloc[0]
             single_row['genre_name'] = genres
             single_row['artist_name'] = artists
