@@ -279,7 +279,26 @@ class PSQLConnector(object):
         cursor.execute(sql)
         df = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
 
-        # df = df.set_index('listen_id', drop=False)
-
         self.close_connection()
-        return df
+
+        duplicates = df[df.duplicated(['listen_id'], keep=False)]
+        non_duplicates = df[~df.duplicated(['listen_id'], keep=False)]
+
+        duplicate_listen_ids = list(dict.fromkeys(duplicates['listen_id'].tolist()))
+
+        for listen_id in duplicate_listen_ids:
+            rows = df.loc[df['listen_id'] == listen_id]
+            genres = list(dict.fromkeys(rows['genre_name'].tolist()))
+            artists = list(dict.fromkeys(rows['artist_name'].tolist()))
+
+            single_row = rows.iloc[0]
+            single_row['genre_name'] = genres
+            single_row['artist_name'] = artists
+
+            non_duplicates = non_duplicates.append(single_row)
+
+        non_duplicates.set_index('listen_id', inplace=True)
+
+        non_duplicates = non_duplicates.sort_values(by=['listen_id'])
+
+        return non_duplicates
