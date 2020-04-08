@@ -96,7 +96,7 @@ if __name__ == "__main__":
         psql.connect()
         response = psql.insert_record_list(payloads)
         
-        if list(dict.fromkeys(response))[0] != -1:
+        if -1 not in response:
             print('No error. Clearing Queue.')
             payloads.clear()
 
