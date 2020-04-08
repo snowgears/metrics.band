@@ -294,6 +294,9 @@ class PSQLConnector(object):
 
             if len(artists) == 1:
                 artists = artists[0]
+            if len(genres) == 1:
+                genres = genres[0]
+                
             single_row = rows.iloc[0]
             single_row['genre_name'] = genres
             single_row['artist_name'] = artists
