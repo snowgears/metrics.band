@@ -1,6 +1,7 @@
 import psycopg2
 import datetime
 import pandas as pd
+pd.options.mode.chained_assignment = None
 
 
 class PSQLConnector(object):
