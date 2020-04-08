@@ -1,5 +1,6 @@
 import psycopg2
 import datetime
+import pandas as pd
 
 
 class PSQLConnector(object):
@@ -34,9 +35,6 @@ class PSQLConnector(object):
         # execute sql
         self.cursor.execute(sql)
         records = self.cursor.fetchall()
-
-        for row in records:
-            print(row)
 
         self.close_connection()
 
@@ -224,8 +222,9 @@ class PSQLConnector(object):
             sql = "INSERT INTO metrics_band.song (spotify_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id";
             # execute the INSERT statement
             self.cursor.execute(sql, (
-            spotify_song_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness,
-            instrumentalness, liveness, valence, tempo, duration, spotify_song_id))
+                spotify_song_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness,
+                acousticness,
+                instrumentalness, liveness, valence, tempo, duration, spotify_song_id))
             # get the generated id back
             song_id = self.cursor.fetchone()[0]
 
@@ -271,3 +270,16 @@ class PSQLConnector(object):
             print(error)
 
         return listen_id
+
+    def select_all_view(self):
+        sql = "SELECT * FROM metrics_band.select_all_view"
+
+        self.connect()
+        cursor = self.cursor
+        cursor.execute(sql)
+        df = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
+
+        # df = df.set_index('listen_id', drop=False)
+
+        self.close_connection()
+        return df
