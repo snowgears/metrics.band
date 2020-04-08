@@ -67,7 +67,7 @@ if __name__ == "__main__":
     def query_spotify(sc):
 
         try:
-            with open('payload_backups.pkl', 'rb') as f:
+            with open('payload_backups_1.pkl', 'rb') as f:
                 payloads = pickle.load(f)
         except:
             payloads = []
@@ -102,7 +102,7 @@ if __name__ == "__main__":
 
         print('Queue: ' + str(len(payloads)))
 
-        with open('payload_backups.pkl', 'wb') as f:
+        with open('payload_backups_1.pkl', 'wb') as f:
             pickle.dump(payloads, f)
 
         s.enter(120, 1, query_spotify, (sc,))
