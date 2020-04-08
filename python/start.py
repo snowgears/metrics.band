@@ -99,6 +99,8 @@ if __name__ == "__main__":
         if -1 not in response:
             print('No error. Clearing Queue.')
             payloads.clear()
+        else:
+            print('Succesfully sent ' + str(len(response)) + 'records.')
 
         print('Queue: ' + str(len(payloads)))
 
