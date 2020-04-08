@@ -239,9 +239,15 @@ class SpotifyConnector(object):
         # get song features
         track_info = spotipy_obj.tracks(song_id_list)
 
+        release_date = track_info['tracks'][0]['album']['release_date']
+
+        if len(release_date) == 4:
+            release_date = release_date + '-01-01'
+
+
         album_info_obj = {
             'album_id': track_info['tracks'][0]['album']['id'],
-            'release_date': track_info['tracks'][0]['album']['release_date'],
+            'release_date': release_date,
             'album_name': track_info['tracks'][0]['album']['name'][:40]
         }
 
@@ -277,7 +283,7 @@ class SpotifyConnector(object):
                 'listen_timestamp': current_song['song_timestamp'],
                 'song_info': {
                     'song_id': current_song['song_id'],
-                    'song_name': current_song['song_name'][:40],
+                    'song_name': current_song['song_name'][:60],
                     'song_popularity': current_song['song_popularity'],
                     'danceability': song_features['danceability'],
                     'energy': song_features['energy'],
