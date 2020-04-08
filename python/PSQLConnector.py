@@ -105,7 +105,7 @@ class PSQLConnector(object):
 
         enduser_id = -1
         try:
-            sql = "INSERT INTO metrics_band.enduser (email) VALUES (%s) ON CONFLICT (email) DO UPDATE SET email=%s RETURNING enduser_id";
+            sql = "INSERT INTO metrics_band.enduser (email) VALUES (%s) ON CONFLICT (email) DO UPDATE SET email=%s RETURNING enduser_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (user_email, user_email))
             # get the generated id back
@@ -124,7 +124,7 @@ class PSQLConnector(object):
         genre_id_list = []
         for genre_name in genres:
             try:
-                sql = "INSERT INTO metrics_band.genre (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name=%s RETURNING genre_id";
+                sql = "INSERT INTO metrics_band.genre (name) VALUES (%s) ON CONFLICT (name) DO UPDATE SET name=%s RETURNING genre_id"
                 # execute the INSERT statement
                 self.cursor.execute(sql, (genre_name, genre_name))
                 # get the generated id back
@@ -148,7 +148,7 @@ class PSQLConnector(object):
             spotify_artist_id = artist['artist_id']
             artist_name = artist['artist_name']
 
-            sql = "INSERT INTO metrics_band.artist (name, spotify_id) VALUES (%s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING artist_id";
+            sql = "INSERT INTO metrics_band.artist (name, spotify_id) VALUES (%s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING artist_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (artist_name, spotify_artist_id, spotify_artist_id))
             # get the generated id back
@@ -170,7 +170,7 @@ class PSQLConnector(object):
             album_name = song_info['album_name']
             release_date = song_info['release_date']
 
-            sql = "INSERT INTO metrics_band.album (spotify_id, album_name, release_date) VALUES (%s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING album_id";
+            sql = "INSERT INTO metrics_band.album (spotify_id, album_name, release_date) VALUES (%s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING album_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (spotify_album_id, album_name, release_date, spotify_album_id))
             # get the generated id back
@@ -188,7 +188,7 @@ class PSQLConnector(object):
 
         song_artist_id = -1
         try:
-            sql = "INSERT INTO metrics_band.song_artist (song_id, artist_id) VALUES (%s, %s) ON CONFLICT ON CONSTRAINT CST_SONG_ARTIST DO UPDATE SET song_id=%s RETURNING song_artist_id";
+            sql = "INSERT INTO metrics_band.song_artist (song_id, artist_id) VALUES (%s, %s) ON CONFLICT ON CONSTRAINT CST_SONG_ARTIST DO UPDATE SET song_id=%s RETURNING song_artist_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (song_id, artist_id, song_id))
             # get the generated id back
@@ -219,7 +219,7 @@ class PSQLConnector(object):
             tempo = song_info['tempo']
             duration = song_info['duration']
 
-            sql = "INSERT INTO metrics_band.song (spotify_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id";
+            sql = "INSERT INTO metrics_band.song (spotify_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness, acousticness, instrumentalness, liveness, valence, tempo, duration) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT (spotify_id) DO UPDATE SET spotify_id=%s RETURNING song_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (
                 spotify_song_id, song_name, album_id, danceability, energy, key, loudness, mode, speechiness,
@@ -240,7 +240,7 @@ class PSQLConnector(object):
 
         artist_genre_id = -1
         try:
-            sql = "INSERT INTO metrics_band.artist_genre (artist_id, genre_id) VALUES (%s, %s) ON CONFLICT ON CONSTRAINT CST_ARTIST_GENRE DO UPDATE SET artist_id=%s RETURNING artist_genre_id";
+            sql = "INSERT INTO metrics_band.artist_genre (artist_id, genre_id) VALUES (%s, %s) ON CONFLICT ON CONSTRAINT CST_ARTIST_GENRE DO UPDATE SET artist_id=%s RETURNING artist_genre_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (artist_id, genre_id, artist_id))
             # get the generated id back
@@ -259,7 +259,7 @@ class PSQLConnector(object):
         try:
             timestamp = datetime.datetime.fromtimestamp(listen_timestamp / 1e3)
 
-            sql = "INSERT INTO metrics_band.listen_history (enduser_id, timestamp, song_id) VALUES (%s, %s, %s) RETURNING listen_id";
+            sql = "INSERT INTO metrics_band.listen_history (enduser_id, timestamp, song_id) VALUES (%s, %s, %s) RETURNING listen_id"
             # execute the INSERT statement
             self.cursor.execute(sql, (user_id, timestamp, song_id))
             # get the generated id back
