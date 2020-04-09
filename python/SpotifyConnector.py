@@ -271,9 +271,6 @@ class SpotifyConnector(object):
                 artists_info = self.previous_artist_info
                 album_info = self.previous_album_info
 
-            # if self.current_user['email']:
-            #     email = self.current_user['email']
-            # else:
             email = self.current_user['display_name']
 
             payload = {
