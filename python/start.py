@@ -92,6 +92,7 @@ if __name__ == "__main__":
 
         for spotify_connector in spotify_connectors:
             payload = [spotify_connector.get_spotify_snapshot_payload()]
+            print('\n')
             print(payload)
             payloads.extend(payload)
 
