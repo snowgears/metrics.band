@@ -6,67 +6,30 @@ from os import walk
 import sched
 import time
 
+# run every 120 seconds
+QUERY_INTERVAL = 120
+PICKLE_FILENAME = 'payload_backups_2.pkl'
+
 if __name__ == "__main__":
+
+    # load spotify and psql credentials from config.json
 
     with open('config.json') as f:
         config = json.load(f)
+
+    # initialize psqlconnector
 
     psql = PSQLConnector(host=config['psql_host'], port=config['psql_port'], dbname=config['psql_dbname'],
                          dbuser=config['psql_dbuser'],
                          dbpassword=config['psql_dbpassword'])
 
+    # create scheduler
     s = sched.scheduler(time.time, time.sleep)
 
 
-    # spotify_connector1 = SpotifyConnector('kevin')
-    # spotify_connector1.get_token_from_cache()
-    # if spotify_connector1.access_token is None:
-    #     print(spotify_connector1.get_spotipy_oath_uri())
-    #     print('Enter url:')
-    #     x = input()
-    #     print(x)
-    #     spotify_connector1.generate_access_tokens(x)
-    #
-    # spotify_user1 = spotify_connector1.get_current_user()
-    # print(spotify_user1)
-    #
-    # spotify_connector2 = SpotifyConnector('tanner')
-    # spotify_connector2.get_token_from_cache()
-    # if spotify_connector2.access_token is None:
-    #     print(spotify_connector2.get_spotipy_oath_uri())
-    #     print('Enter url:')
-    #     x = input()
-    #     spotify_connector2.generate_access_tokens(x)
-    #
-    # spotify_user2 = spotify_connector2.get_current_user()
-    # print(spotify_user2)
-    #
-    # spotify_connector3 = SpotifyConnector('scott')
-    # spotify_connector3.get_token_from_cache()
-    # if spotify_connector3.access_token is None:
-    #     print(spotify_connector3.get_spotipy_oath_uri())
-    #     print('Enter url:')
-    #     x = input()
-    #     spotify_connector3.generate_access_tokens(x)
-    #
-    # spotify_user3 = spotify_connector3.get_current_user()
-    # print(spotify_user3)
-    #
-    # spotify_connector4 = SpotifyConnector('cheeto')
-    # spotify_connector4.get_token_from_cache()
-    # if spotify_connector4.access_token is None:
-    #     print(spotify_connector4.get_spotipy_oath_uri())
-    #     print('Enter url:')
-    #     x = input()
-    #     spotify_connector4.generate_access_tokens(x)
-    #
-    # spotify_user4 = spotify_connector4.get_current_user()
-    # print(spotify_user4)
-    #
-    # print('\n')
-
     def query_spotify(sc):
 
+        # load spotify profiles from cache
         cache_files = []
         for (dirpath, dirnames, filenames) in walk('cache/'):
             cache_files.extend(filenames)
@@ -74,6 +37,7 @@ if __name__ == "__main__":
 
         print(cache_files)
 
+        # initialize spotifyconnectors for each cached profile
         spotify_connectors = []
 
         for cache_file in cache_files:
@@ -84,12 +48,14 @@ if __name__ == "__main__":
 
         print('-' * 50)
 
+        # load a backup pickle if one exists
         try:
-            with open('payload_backups_1.pkl', 'rb') as f:
+            with open(PICKLE_FILENAME, 'rb') as f:
                 payloads = pickle.load(f)
         except:
             payloads = []
 
+        # generate spotify snapshot payload
         for spotify_connector in spotify_connectors:
             payload = [spotify_connector.get_spotify_snapshot_payload()]
             print('\n')
@@ -102,9 +68,11 @@ if __name__ == "__main__":
         print(len(payloads))
         print('\n')
 
+        # send that shit over to psql db
         psql.connect()
         response = psql.insert_record_list(payloads)
 
+        # backup failed syncs
         if -1 not in response:
             print('Succesfully sent ' + str(len(response)) + ' records.')
             print('Clearing Queue.')
@@ -114,12 +82,12 @@ if __name__ == "__main__":
 
         print('Queue: ' + str(len(payloads)))
 
-        with open('payload_backups_1.pkl', 'wb') as f:
+        with open(PICKLE_FILENAME, 'wb') as f:
             pickle.dump(payloads, f)
 
         print('-' * 50)
 
-        s.enter(120, 1, query_spotify, (sc,))
+        s.enter(QUERY_INTERVAL, 1, query_spotify, (sc,))
 
 
     s.enter(1, 1, query_spotify, (s,))
