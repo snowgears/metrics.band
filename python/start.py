@@ -1,6 +1,7 @@
 import pickle
 from SpotifyConnector import *
 from PSQLConnector import *
+from os import walk
 
 import sched
 import time
@@ -16,53 +17,68 @@ if __name__ == "__main__":
 
     s = sched.scheduler(time.time, time.sleep)
 
-    spotify_connector1 = SpotifyConnector('kevin')
-    spotify_connector1.get_token_from_cache()
-    if spotify_connector1.access_token is None:
-        print(spotify_connector1.get_spotipy_oath_uri())
-        print('Enter url:')
-        x = input()
-        print(x)
-        spotify_connector1.generate_access_tokens(x)
+    cache_files = []
+    for (dirpath, dirnames, filenames) in walk('cache/'):
+        cache_files.extend(filenames)
+        break
 
-    spotify_user1 = spotify_connector1.get_current_user()
-    print(spotify_user1)
+    print(cache_files)
 
-    spotify_connector2 = SpotifyConnector('tanner')
-    spotify_connector2.get_token_from_cache()
-    if spotify_connector2.access_token is None:
-        print(spotify_connector2.get_spotipy_oath_uri())
-        print('Enter url:')
-        x = input()
-        spotify_connector2.generate_access_tokens(x)
+    spotify_connectors = []
 
-    spotify_user2 = spotify_connector2.get_current_user()
-    print(spotify_user2)
+    for cache_file in cache_files:
+        spotify_connector = SpotifyConnector(cache_file)
+        spotify_connector.get_token_from_cache()
+        print(spotify_connector.get_current_user())
+        spotify_connectors.append(spotify_connector)
 
-    spotify_connector3 = SpotifyConnector('scott')
-    spotify_connector3.get_token_from_cache()
-    if spotify_connector3.access_token is None:
-        print(spotify_connector3.get_spotipy_oath_uri())
-        print('Enter url:')
-        x = input()
-        spotify_connector3.generate_access_tokens(x)
 
-    spotify_user3 = spotify_connector3.get_current_user()
-    print(spotify_user3)
-
-    spotify_connector4 = SpotifyConnector('cheeto')
-    spotify_connector4.get_token_from_cache()
-    if spotify_connector4.access_token is None:
-        print(spotify_connector4.get_spotipy_oath_uri())
-        print('Enter url:')
-        x = input()
-        spotify_connector4.generate_access_tokens(x)
-
-    spotify_user4 = spotify_connector4.get_current_user()
-    print(spotify_user4)
-
-    print('\n')
-
+    # spotify_connector1 = SpotifyConnector('kevin')
+    # spotify_connector1.get_token_from_cache()
+    # if spotify_connector1.access_token is None:
+    #     print(spotify_connector1.get_spotipy_oath_uri())
+    #     print('Enter url:')
+    #     x = input()
+    #     print(x)
+    #     spotify_connector1.generate_access_tokens(x)
+    #
+    # spotify_user1 = spotify_connector1.get_current_user()
+    # print(spotify_user1)
+    #
+    # spotify_connector2 = SpotifyConnector('tanner')
+    # spotify_connector2.get_token_from_cache()
+    # if spotify_connector2.access_token is None:
+    #     print(spotify_connector2.get_spotipy_oath_uri())
+    #     print('Enter url:')
+    #     x = input()
+    #     spotify_connector2.generate_access_tokens(x)
+    #
+    # spotify_user2 = spotify_connector2.get_current_user()
+    # print(spotify_user2)
+    #
+    # spotify_connector3 = SpotifyConnector('scott')
+    # spotify_connector3.get_token_from_cache()
+    # if spotify_connector3.access_token is None:
+    #     print(spotify_connector3.get_spotipy_oath_uri())
+    #     print('Enter url:')
+    #     x = input()
+    #     spotify_connector3.generate_access_tokens(x)
+    #
+    # spotify_user3 = spotify_connector3.get_current_user()
+    # print(spotify_user3)
+    #
+    # spotify_connector4 = SpotifyConnector('cheeto')
+    # spotify_connector4.get_token_from_cache()
+    # if spotify_connector4.access_token is None:
+    #     print(spotify_connector4.get_spotipy_oath_uri())
+    #     print('Enter url:')
+    #     x = input()
+    #     spotify_connector4.generate_access_tokens(x)
+    #
+    # spotify_user4 = spotify_connector4.get_current_user()
+    # print(spotify_user4)
+    #
+    # print('\n')
 
     def query_spotify(sc):
 
@@ -72,25 +88,15 @@ if __name__ == "__main__":
         except:
             payloads = []
 
-        payload1 = [spotify_connector1.get_spotify_snapshot_payload()]
-        payload2 = [spotify_connector2.get_spotify_snapshot_payload()]
-        payload3 = [spotify_connector3.get_spotify_snapshot_payload()]
-        payload4 = [spotify_connector4.get_spotify_snapshot_payload()]
-
-        payloads.extend(payload1)
-        payloads.extend(payload2)
-        payloads.extend(payload3)
-        payloads.extend(payload4)
+        for spotify_connector in spotify_connectors:
+            payload = [spotify_connector.get_spotify_snapshot_payload()]
+            print(payload)
+            payloads.extend(payload)
 
         payloads = list(filter(None, payloads))
 
         print('\n')
         print(len(payloads))
-        # print(payloads)
-        print(payload1)
-        print(payload2)
-        print(payload3)
-        print(payload4)
         print('\n')
 
         psql.connect()

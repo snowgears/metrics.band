@@ -41,7 +41,7 @@ class SpotifyConnector(object):
         :param debug: bool, optional
         """
         self.scope = 'user-library-read user-read-recently-played user-read-currently-playing'
-        self.cache = '.' + cache
+        self.cache = 'cache/' + cache
         self.debug = debug
 
         # TODO put int try catch to let user know that they need config.json
