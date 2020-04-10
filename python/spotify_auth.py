@@ -4,7 +4,7 @@ if __name__ == "__main__":
     print('Enter name:')
     name = input()
 
-    spotify_connector = SpotifyConnector(name)
+    spotify_connector = SpotifyConnector('.' + name)
     print(spotify_connector.get_spotipy_oath_uri())
     print('Enter url:')
     code = input()
