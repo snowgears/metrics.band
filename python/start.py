@@ -17,21 +17,6 @@ if __name__ == "__main__":
 
     s = sched.scheduler(time.time, time.sleep)
 
-    cache_files = []
-    for (dirpath, dirnames, filenames) in walk('cache/'):
-        cache_files.extend(filenames)
-        break
-
-    print(cache_files)
-
-    spotify_connectors = []
-
-    for cache_file in cache_files:
-        spotify_connector = SpotifyConnector(cache_file)
-        spotify_connector.get_token_from_cache()
-        print(spotify_connector.get_current_user())
-        spotify_connectors.append(spotify_connector)
-
 
     # spotify_connector1 = SpotifyConnector('kevin')
     # spotify_connector1.get_token_from_cache()
@@ -82,6 +67,23 @@ if __name__ == "__main__":
 
     def query_spotify(sc):
 
+        cache_files = []
+        for (dirpath, dirnames, filenames) in walk('cache/'):
+            cache_files.extend(filenames)
+            break
+
+        print(cache_files)
+
+        spotify_connectors = []
+
+        for cache_file in cache_files:
+            spotify_connector = SpotifyConnector(cache_file)
+            spotify_connector.get_token_from_cache()
+            print(spotify_connector.get_current_user())
+            spotify_connectors.append(spotify_connector)
+
+        print('-' * 50)
+
         try:
             with open('payload_backups_1.pkl', 'rb') as f:
                 payloads = pickle.load(f)
@@ -113,6 +115,8 @@ if __name__ == "__main__":
 
         with open('payload_backups_1.pkl', 'wb') as f:
             pickle.dump(payloads, f)
+
+        print('-' * 50)
 
         s.enter(120, 1, query_spotify, (sc,))
 
