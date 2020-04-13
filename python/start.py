@@ -40,11 +40,17 @@ if __name__ == "__main__":
         # initialize spotifyconnectors for each cached profile
         spotify_connectors = []
 
-        for cache_file in cache_files:
-            spotify_connector = SpotifyConnector(cache_file)
-            spotify_connector.get_token_from_cache()
-            print(spotify_connector.get_current_user())
-            spotify_connectors.append(spotify_connector)
+        while True:
+            try:
+                for cache_file in cache_files:
+                    spotify_connector = SpotifyConnector(cache_file)
+                    spotify_connector.get_token_from_cache()
+                    print(spotify_connector.get_current_user())
+                    spotify_connectors.append(spotify_connector)
+            except:
+                continue
+            else:
+                break
 
         print('-' * 50)
 
