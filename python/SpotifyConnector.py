@@ -275,13 +275,13 @@ class SpotifyConnector(object):
                 song_features = self.get_song_features(current_song['song_id'])
                 artists_info = self.get_artists_info(current_song['artists'])
                 album_info = self.get_album_info([current_song['song_id']])
-                user_playback_info = self.get_user_playback_info()
+                # user_playback_info = self.get_user_playback_info()
 
             else:
                 song_features = self.previous_song_features
                 artists_info = self.previous_artist_info
                 album_info = self.previous_album_info
-                user_playback_info = self.previous_user_playback_info
+                # user_playback_info = self.previous_user_playback_info
 
             email = self.current_user['display_name']
 
@@ -289,8 +289,8 @@ class SpotifyConnector(object):
                 'username': current_song['username'],
                 'email': email,
                 'listen_timestamp': current_song['song_timestamp'],
-                'device_type': user_playback_info['device']['type'],
-                'device_name': user_playback_info['device']['name'],
+                # 'device_type': user_playback_info['device']['type'],
+                # 'device_name': user_playback_info['device']['name'],
                 'song_info': {
                     'song_id': current_song['song_id'],
                     'song_name': current_song['song_name'][:60],
@@ -321,7 +321,7 @@ class SpotifyConnector(object):
             self.previous_song_features = song_features
             self.previous_artist_info = artists_info
             self.previous_album_info = album_info
-            self.previous_user_playback_info = user_playback_info
+            # self.previous_user_playback_info = user_playback_info
 
             return payload
 
