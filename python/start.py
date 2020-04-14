@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 for cache_file in cache_files:
                     spotify_connector = SpotifyConnector(cache_file)
                     spotify_connector.get_token_from_cache()
-                    print(spotify_connector.get_current_user())
+                    print(spotify_connector.get_current_user()['display_name'])
                     spotify_connectors.append(spotify_connector)
             except:
                 continue
