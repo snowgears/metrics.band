@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 print(payload)
                 payloads.extend(payload)
             except:
-                continue
+                print('snapshot error')
 
         payloads = list(filter(None, payloads))
 
