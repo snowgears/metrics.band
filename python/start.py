@@ -63,10 +63,13 @@ if __name__ == "__main__":
 
         # generate spotify snapshot payload
         for spotify_connector in spotify_connectors:
-            payload = [spotify_connector.get_spotify_snapshot_payload()]
-            print('\n')
-            print(payload)
-            payloads.extend(payload)
+            try:
+                payload = [spotify_connector.get_spotify_snapshot_payload()]
+                print('\n')
+                print(payload)
+                payloads.extend(payload)
+            except:
+                continue
 
         payloads = list(filter(None, payloads))
 
