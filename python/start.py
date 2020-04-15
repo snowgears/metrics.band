@@ -48,6 +48,7 @@ if __name__ == "__main__":
                     print(spotify_connector.get_current_user()['display_name'])
                     spotify_connectors.append(spotify_connector)
             except:
+                time.sleep(30)
                 continue
             else:
                 break
@@ -69,6 +70,7 @@ if __name__ == "__main__":
                 print(payload)
                 payloads.extend(payload)
             except:
+                time.sleep(30)
                 print('snapshot error')
 
         payloads = list(filter(None, payloads))
